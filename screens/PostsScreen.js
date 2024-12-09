@@ -6,11 +6,15 @@ const PostsScreen = ({ route, navigation }) => {
 
   const renderPost = ({ item }) => (
     <TouchableOpacity
-      style={styles.postContainer}
+      style={styles.postCard}
       onPress={() => navigation.navigate('Comments', { postId: item.id })}
     >
-      <Text style={styles.postTitle}>{item.title}</Text>
-      <Text style={styles.postBody}>{item.body}</Text>
+      <View style={styles.postContent}>
+        <Text style={styles.postTitle}>{item.title}</Text>
+        <Text style={styles.postBody} numberOfLines={3}>
+          {item.body}
+        </Text>
+      </View>
     </TouchableOpacity>
   );
 
@@ -20,6 +24,7 @@ const PostsScreen = ({ route, navigation }) => {
         data={posts}
         keyExtractor={(item) => item.id.toString()}
         renderItem={renderPost}
+        showsVerticalScrollIndicator={false}
       />
     </View>
   );
@@ -29,24 +34,34 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: '#fff',
+    backgroundColor: '#f3f4f6',
   },
-  postContainer: {
+  postCard: {
     marginBottom: 16,
     padding: 16,
-    backgroundColor: '#f9f9f9',
-    borderRadius: 8,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 4,
+    borderColor: '#e0e0e0',
     borderWidth: 1,
-    borderColor: '#ddd',
+  },
+  postContent: {
+    flexDirection: 'column',
   },
   postTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 8,
+    color: '#333',
   },
   postBody: {
     fontSize: 14,
-    color: '#666',
+    color: '#555',
+    lineHeight: 20,
   },
 });
 

@@ -1,21 +1,16 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
-
-const BASE_URL = 'https://jsonplaceholder.typicode.com';
+import apiService from '../../services/apiServices';
 
 export const fetchPhotos = createAsyncThunk('data/fetchPhotos', async () => {
-  const response = await axios.get(`${BASE_URL}/photos`);
-  return response.data.slice(0, 10);
+  return await apiService.fetchPhotos();
 });
 
 export const fetchUsers = createAsyncThunk('data/fetchUsers', async () => {
-  const response = await axios.get(`${BASE_URL}/users`);
-  return response.data;
+  return await apiService.fetchUsers();
 });
 
 export const fetchPosts = createAsyncThunk('data/fetchPosts', async () => {
-  const response = await axios.get(`${BASE_URL}/posts`);
-  return response.data;
+  return await apiService.fetchPosts();
 });
 
 const dataSlice = createSlice({
@@ -41,7 +36,6 @@ const dataSlice = createSlice({
         state.loading = false;
         state.error = action.error.message;
       })
-      // Add cases for users and posts
       .addCase(fetchUsers.fulfilled, (state, action) => {
         state.users = action.payload;
       })
