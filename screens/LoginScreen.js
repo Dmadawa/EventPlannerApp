@@ -1,18 +1,13 @@
+// LoginScreen.js
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Alert } from 'react-native';
 import { login } from '../store/slices/authSlice';
-import {
-  View,
-  TextInput,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  ActivityIndicator,
-} from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
-import IconFeather from 'react-native-vector-icons/Feather';
-import AntDesign from 'react-native-vector-icons/AntDesign';
+import TextInputWithIcon from '../components/TextInputWithIcon';
+import IconFeather from 'react-native-vector-icons/Feather'; 
+import CustomButton from '../components/CustomButton'; 
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { Routes }  from '../navigation/Routes';
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
@@ -23,107 +18,83 @@ const LoginScreen = ({ navigation }) => {
 
   const handleLogin = async () => {
     try {
-      // Dispatch login action
       const user = await dispatch(login({ email, password })).unwrap();
-  
-      // Assume user contains a `hasOnboarded` field
       const { hasOnboarded } = user;
-  
-      // Navigate based on onboarding status
+
       if (hasOnboarded) {
         Alert.alert('Success', 'Logged in successfully');
         navigation.reset({
           index: 0,
-          routes: [{ name: 'Drawer' }], // Reset to DrawerNavigator
+          routes: [{ name: 'Drawer' }]
         });
       } else {
         Alert.alert('Welcome', 'Please complete your onboarding.');
         navigation.reset({
           index: 0,
-          routes: [{ name: 'ProfileImageUpload' }], // Navigate to Profile Image Upload
+          routes: [{ name: 'ProfileImageUpload' }]
         });
       }
     } catch (err) {
-      Alert.alert('Login Failed', err.message || 'An error occurred'); // Show error to the user
+      Alert.alert('Login Failed', err.message || 'An error occurred');
     }
   };
-  
 
   return (
     <View style={styles.container}>
-      {/* Heading */}
       <Text style={styles.title}>Welcome</Text>
       <Text style={styles.subtitle}>Welcome to your Portal</Text>
 
       {/* Email Input */}
       <Text style={styles.nameField}>Email</Text>
-      <View style={styles.inputContainer}>
-        <Icon name="mail-outline" size={20} color="#666" style={styles.icon} />
-        <TextInput
-          style={styles.input}
-          placeholder="your.email@gmail.com"
-          placeholderTextColor="#999"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-        />
-      </View>
+      <TextInputWithIcon
+        value={email}
+        onChangeText={setEmail}
+        placeholder="your.email@gmail.com"
+        leftIconName="mail-outline"
+        leftIconLibrary="Ionicons" // Specify Ionicons library for the email icon
+      />
 
       {/* Password Input */}
       <Text style={styles.nameField}>Password</Text>
-      <View style={styles.inputContainer}>
-        <AntDesign name="lock" size={20} color="#666" style={styles.icon} />
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          placeholderTextColor="#999"
-          secureTextEntry={!isPasswordVisible}
-          value={password}
-          onChangeText={setPassword}
-        />
-        <TouchableOpacity onPress={() => setIsPasswordVisible(!isPasswordVisible)}>
-          <Icon
-            name={isPasswordVisible ? 'eye-outline' : 'eye-off-outline'}
-            size={20}
-            color="#666"
-          />
-        </TouchableOpacity>
-      </View>
-
+      <TextInputWithIcon
+        value={password}
+        onChangeText={setPassword}
+        placeholder="Password"
+        secureTextEntry={!isPasswordVisible}
+        leftIconName="lock"
+        leftIconLibrary="AntDesign" // Specify AntDesign library for the lock icon
+        rightIconName={isPasswordVisible ? "eye-outline" : "eye-off-outline"}
+        rightIconLibrary="Ionicons" // Specify Ionicons library for the eye icon
+        onRightIconPress={() => setIsPasswordVisible(!isPasswordVisible)}
+      />
       {/* Restore Password */}
       <TouchableOpacity
         style={styles.restorePassword}
-        onPress={() => navigation.navigate('RestorePassword')}
+        onPress={() => navigation.navigate(Routes.RESTOREPASSWORDSCREEN)}
       >
         <Text style={styles.restorePasswordText}>Restore password</Text>
         <IconFeather name="arrow-up-right" size={16} color="#E76F51" />
       </TouchableOpacity>
-
+      <View style={{ marginTop: 150 }}>
       {/* Login Button */}
-      <TouchableOpacity
-        style={styles.loginButton}
+      <CustomButton
         onPress={handleLogin}
+        text="Login"
+        loading={loading}
+        iconName="arrow-forward-outline"
         disabled={loading}
-      >
-        {loading ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <>
-            <Text style={styles.buttonText}>Login</Text>
-            <Icon name="arrow-forward-outline" size={20} color="#fff" />
-          </>
-        )}
-      </TouchableOpacity>
+      />
+
 
       {/* Sign Up Button */}
-      <TouchableOpacity
-        style={styles.signUpButton}
-        onPress={() => navigation.navigate('SignUp')}
-      >
-        <Text style={styles.buttonText}>Sign Up</Text>
-        <Icon name="arrow-forward-outline" size={20} color="#fff" />
-      </TouchableOpacity>
+      <CustomButton
+        onPress={() => navigation.navigate(Routes.SIGNUP)}
+        text="Sign Up"
+        loading={loading}
+        iconName="arrow-forward-outline"
+        disabled={loading}
+      />
+      </View>
 
       {error && <Text style={styles.error}>{error}</Text>}
     </View>
@@ -138,11 +109,9 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: 'Inter',
-    fontWeight: 600,
+    fontWeight: '600',
     color: '#191C1E',
     fontSize: 32,
-    fontWeight: 600,
-    color: '#333',
     textAlign: 'center',
     marginTop: 180,
     marginBottom: 8,
@@ -152,22 +121,6 @@ const styles = StyleSheet.create({
     color: '#666',
     textAlign: 'center',
     marginBottom: 24,
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    marginBottom: 16,
-    backgroundColor: '#DA5E4214'
-  },
-  icon: {
-    marginRight: 8,
-  },
-  input: {
-    flex: 1,
-    fontSize: 16,
-    color: '#333',
   },
   restorePassword: {
     flexDirection: 'row',
@@ -181,45 +134,17 @@ const styles = StyleSheet.create({
     marginRight: 4,
     fontWeight: '500',
   },
-  loginButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#DA5E42',
-    width:342,
-    height:44,
-    borderRadius:2,
-    paddingVertical: 14,
-    marginTop: 100,
-    marginBottom: 16,
-  },
-  signUpButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#DA5E42',
-    borderRadius:2,
-    width:342,
-    height:44,
-    paddingVertical: 14
-  },
-  buttonText: {
-    fontSize: 14,
-    fontWeight: 600,
-    color: '#fff',
-    marginRight: 8,
+  nameField: {
+    fontSize: 13,
+    fontWeight: 500,
+    marginBottom: 7,
+    color: '#444749',
   },
   error: {
     color: 'red',
     marginTop: 16,
     textAlign: 'center',
   },
-  nameField: {
-    fontSize: 13,
-    fontWeight: 500,
-    marginBottom: 7,
-    color:'#444749'
-  }
 });
 
 export default LoginScreen;

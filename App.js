@@ -4,80 +4,45 @@ import messaging from '@react-native-firebase/messaging';
 import { Provider } from 'react-redux';
 import store from './store/store';
 import RootNavigator from './navigation/RootNavigator';
+import { LogBox } from 'react-native';
+
+// Ignore all logs
+LogBox.ignoreAllLogs(true); // Set to false to re-enable
 
 const App = () => {
   useEffect(() => {
-    // Request permissions for notifications (Android only)
-    const requestPermissions = async () => {
-      try {
-        const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
-        );
-        if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-          console.log('Notification permissions granted.');
-        } else {
-          console.log('Notification permissions denied.');
-        }
-      } catch (error) {
-        console.error('Permission error:', error);
-      }
-    };
+    const requestFCMPermissions = async () => {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
+      );
 
-    const setupFCM = async () => {
-      // Request FCM permissions
+      if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+        Alert.alert('Permission Denied', 'You need to enable notifications.');
+      }
+
       const authStatus = await messaging().requestPermission();
-      const enabled =
+      const isAuthorized =
         authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
         authStatus === messaging.AuthorizationStatus.PROVISIONAL;
 
-      if (enabled) {
-        console.log('FCM Authorization status:', authStatus);
-
-        // Get the FCM token
-        const fcmToken = await messaging().getToken();
-        console.log('FCM Token:', fcmToken);
-
-        // Save or use the FCM token as needed
-        // Example: Send token to your server
+      if (isAuthorized) {
+        console.log('FCM Permissions Granted:', authStatus);
+        await messaging().subscribeToTopic('all'); // Subscribe to topic "all"
+        console.log('Subscribed to FCM topic: all');
       }
     };
 
-    const handleForegroundNotifications = () => {
-      // Handle messages when the app is in the foreground
-      const unsubscribe = messaging().onMessage(async (remoteMessage) => {
-        console.log('FCM Message Received in foreground:', remoteMessage);
-        Alert.alert('New Notification', remoteMessage.notification?.body || 'You have a new message.');
-      });
+    requestFCMPermissions();
 
-      return unsubscribe;
-    };
+    // Listen for notifications
+    const unsubscribe = messaging().onMessage(async (remoteMessage) => {
+      Alert.alert(
+        'Notification Received',
+        remoteMessage.notification.body
+      );
+    });
 
-    const setupNotificationListeners = () => {
-      // Background and terminated state messages
-      messaging().setBackgroundMessageHandler(async (remoteMessage) => {
-        console.log('FCM Message Received in background:', remoteMessage);
-      });
-
-      // Handle notification when the app is opened by tapping on it
-      messaging()
-        .getInitialNotification()
-        .then((remoteMessage) => {
-          if (remoteMessage) {
-            console.log('Notification caused app to open from quit state:', remoteMessage);
-          }
-        });
-    };
-
-    // Initialize the FCM setup
-    requestPermissions();
-    setupFCM();
-    setupNotificationListeners();
-
-    // Listen to notifications in the foreground
-    const unsubscribeForeground = handleForegroundNotifications();
-
-    // Cleanup listeners
-    return () => unsubscribeForeground();
+    return unsubscribe; // Cleanup listener
   }, []);
 
   return (

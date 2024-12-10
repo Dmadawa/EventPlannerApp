@@ -20,8 +20,6 @@ const ProfileImageUploadScreen = ({ navigation }) => {
       (response) => {
         if (response.didCancel) {
           console.log('User cancelled image picker');
-        } else if (response.errorCode) {
-          console.error('Image Picker Error: ', response.errorMessage);
         } else if (response.assets && response.assets.length > 0) {
           setImageUri(response.assets[0].uri); // Save the selected image URI
         }
@@ -49,7 +47,7 @@ const ProfileImageUploadScreen = ({ navigation }) => {
       Alert.alert('Success', 'Profile image uploaded successfully!');
       navigation.navigate('UserInformation');
     } catch (error) {
-      console.error('Error updating profile image: ', error);
+      console.log('Error updating profile image: ', error);
       Alert.alert('Error', 'Failed to upload profile image.');
     }
   };
@@ -107,6 +105,7 @@ const styles = StyleSheet.create({
     height: 100,
     borderRadius: 50,
     borderColor: '#ccc',
+    backgroundColor: '#F1E6E3',
     borderWidth: 1,
     justifyContent: 'center',
     alignItems: 'center',

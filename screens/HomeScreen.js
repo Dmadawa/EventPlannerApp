@@ -9,7 +9,6 @@ import {
   StyleSheet,
   Dimensions,
   TouchableOpacity,
-  ScrollView,
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
@@ -55,74 +54,78 @@ const HomeScreen = ({ navigation }) => {
   );
 
   return (
-    <ScrollView contentContainerStyle={styles.scrollContainer}>
-      {/* Horizontal Image Slider */}
-      <FlatList
-        horizontal
-        data={photos}
-        renderItem={({ item }) => <Image source={{ uri: item.url }} style={styles.image} />}
-        keyExtractor={(item) => item.id.toString()}
-        showsHorizontalScrollIndicator={false}
-      />
-      <Text style={styles.eventTitle}>Cricket Event</Text>
+    <FlatList
+      data={photos}
+      keyExtractor={(item) => item.id.toString()}
+      ListHeaderComponent={() => (
+        <View>
+          {/* Horizontal Image Slider */}
+          <FlatList
+            horizontal
+            data={photos}
+            renderItem={({ item }) => <Image source={{ uri: item.url }} style={styles.image} />}
+            keyExtractor={(item) => item.id.toString()}
+            showsHorizontalScrollIndicator={false}
+            style={styles.horizontalList}
+          />
+          <Text style={styles.eventTitle}>Cricket Event</Text>
 
-      {/* Organizers Section */}
-      <Text style={styles.title}>Organizers</Text>
-      <FlatList
-        data={users}
-        renderItem={renderUserItem}
-        keyExtractor={(item) => item.id.toString()}
-        ItemSeparatorComponent={renderSeparator}
-        style={styles.organizersList} // Fixed height for scrolling
-        showsVerticalScrollIndicator={false}
-      />
+          {/* Organizers Section */}
+          <Text style={styles.title}>Organizers</Text>
+          <FlatList
+            data={users}
+            renderItem={renderUserItem}
+            keyExtractor={(item) => item.id.toString()}
+            ItemSeparatorComponent={renderSeparator}
+            style={styles.organizersList}
+            showsVerticalScrollIndicator={false}
+          />
+          { renderSeparator }
+          {/* Posts Section */}
+          <Text style={styles.title}>Photos</Text>
+          <FlatList
+            horizontal
+            data={photos}
+            renderItem={renderPostItem}
+            keyExtractor={(item) => item.id.toString()}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.photoList}
+          />
 
-      {/* Posts Section */}
-      <Text style={styles.title}>Photos</Text>
-      <FlatList
-        horizontal
-        data={photos}
-        renderItem={renderPostItem}
-        keyExtractor={(item) => item.id.toString()}
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.photoList}
-      />
-
-      {/* Total Posts Count */}
-      {loading ? (
-        <Text>Loading posts...</Text>
-      ) : (
-        <TouchableOpacity
-          style={styles.postsCountContainer}
-          onPress={() => navigation.navigate('Posts', { posts })}
-        >
-          <Text style={styles.postsCountText}>{posts.length}</Text>
-          <Text style={styles.postsCountSubTitleText}>Posts</Text>
-        </TouchableOpacity>
+          {/* Total Posts Count */}
+          {loading ? (
+            <Text>Loading posts...</Text>
+          ) : (
+            <TouchableOpacity
+              style={styles.postsCountContainer}
+              onPress={() => navigation.navigate('Posts', { posts })}
+            >
+              <Text style={styles.postsCountText}>{posts.length}</Text>
+              <Text style={styles.postsCountSubTitleText}>Posts</Text>
+            </TouchableOpacity>
+          )}
+        </View>
       )}
-    </ScrollView>
+      ListFooterComponent={<View style={{ height: 16 }} />}
+    />
   );
 };
 
 const styles = StyleSheet.create({
-  scrollContainer: {
-    paddingBottom: 16,
-    backgroundColor: '#fff',
-  },
   image: {
     width: Dimensions.get('window').width,
-    height: 220,
+    height: 220 // Space below the images
+  },
+  horizontalList: {
+    marginBottom: 10
   },
   eventTitle: {
     fontFamily: 'Inter',
-    fontWeight: 600,
+    fontWeight: '600',
     color: '#191C1E',
     fontSize: 26,
-    fontWeight: 600,
-    color: '#333',
-    marginTop: 20,
-    paddingLeft: 16,
-    marginBottom: 8,
+    marginLeft: 16,
+    marginBottom: 16
   },
   title: {
     fontSize: 18,
@@ -130,10 +133,10 @@ const styles = StyleSheet.create({
     paddingLeft: 16,
     fontFamily: 'Inter_18pt-SemiBold',
     fontWeight: 600,
+    color: '#333',
   },
   organizersList: {
-    height: 240, // Fixed height for the FlatList
-    paddingHorizontal: 16,
+    height: 220
   },
   photoList: {
     paddingLeft: 16,
@@ -175,8 +178,8 @@ const styles = StyleSheet.create({
     borderColor: '#E1E2E4',
   },
   photo: {
-    width: 244,
-    height: 130,
+    width: '100%',
+    height: 150, // Resize photo height for better fit
     marginBottom: 8,
   },
   description: {
@@ -189,6 +192,7 @@ const styles = StyleSheet.create({
   },
   postsCountContainer: {
     alignItems: 'center',
+    marginTop: 16, // Add margin for spacing between the buttons and posts count
   },
   postsCountText: {
     marginTop: 10,

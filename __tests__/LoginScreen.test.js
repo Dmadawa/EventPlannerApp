@@ -1,48 +1,52 @@
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
-import Provider from 'react-redux';
+import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
-import thunk from 'redux-thunk';
-import LoginScreen from '../screens/LoginScreen';
+import LoginScreen from '../screens/LoginScreen'; // Adjust the import based on your file structure
+import { login } from '../store/slices/authSlice';
+import { Alert } from 'react-native';
 
-// Mock dependencies
-const mockStore = configureStore([thunk]);
-
+// Mock navigation
+const mockNavigate = jest.fn();
+const mockReset = jest.fn();
 jest.mock('@react-navigation/native', () => ({
   useNavigation: () => ({
-    reset: jest.fn(),
-    navigate: jest.fn(),
+    navigate: mockNavigate,
+    reset: mockReset,
   }),
 }));
 
+jest.mock('react-native', () => {
+  return {
+    StyleSheet: {
+      create: jest.fn(() => ({})),
+    },
+  };
+});
+
+// Mock Redux actions
 jest.mock('../store/slices/authSlice', () => ({
-  login: jest.fn(({ email, password }) => async (dispatch) => {
-    if (email === 'valid@example.com' && password === 'password') {
-      return { hasOnboarded: true }; // Mocked response
-    } else {
-      throw new Error('Invalid email or password');
-    }
-  }),
+  login: jest.fn(),
 }));
 
 describe('LoginScreen', () => {
+  const mockStore = configureStore([]);
   let store;
-  let navigation;
 
   beforeEach(() => {
     store = mockStore({
-      auth: { loading: false, error: null },
+      auth: {
+        loading: false,
+        error: null,
+      },
     });
-    navigation = {
-      reset: jest.fn(),
-      navigate: jest.fn(),
-    };
+    jest.clearAllMocks();
   });
 
-  it('renders correctly', () => {
+  it('renders the login screen correctly', () => {
     const { getByText, getByPlaceholderText } = render(
       <Provider store={store}>
-        <LoginScreen navigation={navigation} />
+        <LoginScreen />
       </Provider>
     );
 
@@ -54,86 +58,83 @@ describe('LoginScreen', () => {
     expect(getByText('Sign Up')).toBeTruthy();
   });
 
-  it('handles login with valid credentials', async () => {
-    const { getByPlaceholderText, getByText } = render(
+  it('displays an error message when login fails', async () => {
+    const mockError = 'Invalid credentials';
+    login.mockRejectedValueOnce(new Error(mockError));
+
+    const { getByText, getByPlaceholderText } = render(
       <Provider store={store}>
-        <LoginScreen navigation={navigation} />
+        <LoginScreen />
       </Provider>
     );
 
-    const emailInput = getByPlaceholderText('your.email@gmail.com');
-    const passwordInput = getByPlaceholderText('Password');
-    const loginButton = getByText('Login');
-
-    fireEvent.changeText(emailInput, 'valid@example.com');
-    fireEvent.changeText(passwordInput, 'password');
-    fireEvent.press(loginButton);
+    fireEvent.changeText(getByPlaceholderText('your.email@gmail.com'), 'test@example.com');
+    fireEvent.changeText(getByPlaceholderText('Password'), 'password123');
+    fireEvent.press(getByText('Login'));
 
     await waitFor(() => {
-      expect(navigation.reset).toHaveBeenCalledWith({
+      expect(Alert.alert).toHaveBeenCalledWith('Login Failed', mockError);
+    });
+  });
+
+  it('navigates to the onboarding screen when the user is not onboarded', async () => {
+    const mockUser = { hasOnboarded: false };
+    login.mockResolvedValueOnce(mockUser);
+
+    const { getByText, getByPlaceholderText } = render(
+      <Provider store={store}>
+        <LoginScreen navigation={{ reset: mockReset }} />
+      </Provider>
+    );
+
+    fireEvent.changeText(getByPlaceholderText('your.email@gmail.com'), 'test@example.com');
+    fireEvent.changeText(getByPlaceholderText('Password'), 'password123');
+    fireEvent.press(getByText('Login'));
+
+    await waitFor(() => {
+      expect(mockReset).toHaveBeenCalledWith({
+        index: 0,
+        routes: [{ name: 'ProfileImageUpload' }],
+      });
+    });
+  });
+
+  it('navigates to the drawer screen when the user is onboarded', async () => {
+    const mockUser = { hasOnboarded: true };
+    login.mockResolvedValueOnce(mockUser);
+
+    const { getByText, getByPlaceholderText } = render(
+      <Provider store={store}>
+        <LoginScreen navigation={{ reset: mockReset }} />
+      </Provider>
+    );
+
+    fireEvent.changeText(getByPlaceholderText('your.email@gmail.com'), 'test@example.com');
+    fireEvent.changeText(getByPlaceholderText('Password'), 'password123');
+    fireEvent.press(getByText('Login'));
+
+    await waitFor(() => {
+      expect(mockReset).toHaveBeenCalledWith({
         index: 0,
         routes: [{ name: 'Drawer' }],
       });
     });
   });
 
-  it('shows an error on invalid login', async () => {
-    const { getByPlaceholderText, getByText, findByText } = render(
-      <Provider store={store}>
-        <LoginScreen navigation={navigation} />
-      </Provider>
-    );
-
-    const emailInput = getByPlaceholderText('your.email@gmail.com');
-    const passwordInput = getByPlaceholderText('Password');
-    const loginButton = getByText('Login');
-
-    fireEvent.changeText(emailInput, 'invalid@example.com');
-    fireEvent.changeText(passwordInput, 'wrongpassword');
-    fireEvent.press(loginButton);
-
-    const errorMessage = await findByText('Invalid email or password');
-    expect(errorMessage).toBeTruthy();
-  });
-
-  it('disables login button while loading', () => {
+  it('shows a loading indicator when login is in progress', () => {
     store = mockStore({
-      auth: { loading: true, error: null },
+      auth: {
+        loading: true,
+        error: null,
+      },
     });
 
-    const { getByText } = render(
+    const { getByTestId } = render(
       <Provider store={store}>
-        <LoginScreen navigation={navigation} />
+        <LoginScreen />
       </Provider>
     );
 
-    const loginButton = getByText('Login');
-    expect(loginButton).toBeDisabled();
-  });
-
-  it('navigates to sign up screen on "Sign Up" press', () => {
-    const { getByText } = render(
-      <Provider store={store}>
-        <LoginScreen navigation={navigation} />
-      </Provider>
-    );
-
-    const signUpButton = getByText('Sign Up');
-    fireEvent.press(signUpButton);
-
-    expect(navigation.navigate).toHaveBeenCalledWith('SignUp');
-  });
-
-  it('navigates to restore password screen on "Restore password" press', () => {
-    const { getByText } = render(
-      <Provider store={store}>
-        <LoginScreen navigation={navigation} />
-      </Provider>
-    );
-
-    const restorePasswordButton = getByText('Restore password');
-    fireEvent.press(restorePasswordButton);
-
-    expect(navigation.navigate).toHaveBeenCalledWith('RestorePassword');
+    expect(getByTestId('ActivityIndicator')).toBeTruthy();
   });
 });

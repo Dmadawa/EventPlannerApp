@@ -1,0 +1,7 @@
+// __mocks__/react-redux.js
+module.exports = {
+  Provider: ({ children }) => children,
+  connect: () => (component) => component,
+  useDispatch: jest.fn(),
+  useSelector: jest.fn(),
+};

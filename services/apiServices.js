@@ -9,7 +9,7 @@ const apiService = {
   },
   fetchUsers: async () => {
     const response = await axios.get(`${BASE_URL}/users`);
-    return response.data;
+    return response.data.slice(0, 3);;
   },
   fetchPosts: async () => {
     const response = await axios.get(`${BASE_URL}/posts`);

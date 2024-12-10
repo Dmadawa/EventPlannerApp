@@ -34,7 +34,7 @@ const ProfileScreen = ({ navigation }) => {
         }
       }
     } catch (error) {
-      console.error('Error fetching user data:', error.message);
+      console.log('Error fetching user data:', error.message);
     } finally {
       setLoading(false); // Stop the loading indicator
     }

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, TextInput, Button, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { View, TextInput, TouchableWithoutFeedback, StyleSheet, Text, TouchableOpacity, Keyboard, KeyboardAvoidingView, ScrollView } from 'react-native';
 import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
 import { CommonActions } from '@react-navigation/native';
@@ -33,7 +33,12 @@ const UserInformationScreen = ({ navigation }) => {
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView 
+      style={styles.containerMain} 
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'} // Different behavior on iOS and Android
+    >
+    {/* <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}> */}
+    <ScrollView style={styles.container}>
       <Text style={styles.title}>Personal info</Text>
       <Text style={styles.subtitle}>You can add your personal data now or do it later</Text>
       <Text style={styles.nameField}>First Name</Text>
@@ -89,14 +94,21 @@ const UserInformationScreen = ({ navigation }) => {
         <Icon name="arrow-forward-outline" size={20} color="#fff" />
       </TouchableOpacity>
     </View>
-    </View>
+    </ScrollView>
+    {/* </TouchableWithoutFeedback> */}
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
+    flexGrow: 1,
+    padding: 16,
+    marginTop: 50
+  },
+  containerMain: {
     flex: 1,
-    padding: 16
+    backgroundColor: '#fff',
   },
   title: {
     fontFamily: 'Inter',
@@ -124,6 +136,7 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     flex: 1,
+    marginTop: 100,
     flexDirection: 'row',
     justifyContent: 'space-evenly',
     alignItems: 'center'

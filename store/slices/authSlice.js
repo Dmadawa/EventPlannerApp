@@ -24,16 +24,31 @@ const authSlice = createSlice({
       })
       .addCase(login.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload; // Save user data
+        state.user = {
+          uid: action.payload.uid,
+          email: action.payload.email,
+          displayName: action.payload.displayName || '',
+          hasOnboarded: action.payload.hasOnboarded || false
+        };
       })
       .addCase(login.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload; // Save error message
+        state.error = action.payload;
+      });
+      builder
+      .addCase(signup.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(signup.fulfilled, (state, action) => {
+        state.loading = false;
+      })
+      .addCase(signup.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       });
   },
 });
-
-export const { setUser, setLoading, setError } = authSlice.actions;
 
 export const login = createAsyncThunk(
   'auth/login',
@@ -73,8 +88,8 @@ export const signup = createAsyncThunk(
 
       return userCredential.user; // Return the created user
     } catch (error) {
-      console.error('Signup Error:', error);
-      return rejectWithValue(error.message); // Return error message as rejected value
+      console.log('Signup Error:', error);
+      return rejectWithValue(error.message);
     }
   }
 );

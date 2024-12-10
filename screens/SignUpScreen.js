@@ -1,20 +1,19 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { signup } from '../store/slices/authSlice'; // Update with correct path
+import { signup } from '../store/slices/authSlice';
+import CustomButton from '../components/CustomButton'; 
 import {
   View,
   TextInput,
   Text,
   TouchableOpacity,
   StyleSheet,
-  ActivityIndicator,
   Alert,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 
 const SignUpScreen = ({ navigation }) => {
-  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -25,7 +24,7 @@ const SignUpScreen = ({ navigation }) => {
   const { loading, error } = useSelector((state) => state.auth);
 
   const handleSignUp = async () => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       Alert.alert('Validation Error', 'Please enter a valid email address');
       return;
@@ -46,8 +45,8 @@ const SignUpScreen = ({ navigation }) => {
       Alert.alert('Success', 'Account created successfully');
       navigation.navigate('Login'); // Navigate to Login on success
     } catch (err) {
-      console.error('Signup Error:', err);
-      Alert.alert('Signup Failed', err.message);
+      console.log('Signup Error:', err);
+      Alert.alert('Signup Failed', "The email address is already in use by another account.");
     }
   };
 
@@ -57,7 +56,7 @@ const SignUpScreen = ({ navigation }) => {
       <Text style={styles.title}>Welcome</Text>
       <Text style={styles.subtitle}>Welcome to your Portal</Text>
 
-      {/* Email Input */}
+      {/* Email Field */}
       <Text style={styles.nameField}>Email</Text>
       <View style={styles.inputContainer}>
         <Icon name="mail-outline" size={20} color="#666" style={styles.icon} />
@@ -72,7 +71,7 @@ const SignUpScreen = ({ navigation }) => {
         />
       </View>
 
-      {/* Password Input */}
+      {/* Password Field */}
       <Text style={styles.nameField}>Password</Text>
       <View style={styles.inputContainer}>
         <AntDesign name="lock" size={20} color="#666" style={styles.icon} />
@@ -93,7 +92,7 @@ const SignUpScreen = ({ navigation }) => {
         </TouchableOpacity>
       </View>
 
-      {/* Confirm Password Input */}
+      {/* Confirm Password Field */}
       <Text style={styles.nameField}>Confirm Password</Text>
       <View style={styles.inputContainer}>
         <AntDesign name="lock" size={20} color="#666" style={styles.icon} />
@@ -117,31 +116,20 @@ const SignUpScreen = ({ navigation }) => {
       </View>
 
       {/* Sign Up Button */}
-      <TouchableOpacity
-        style={styles.signUpButton}
+      <CustomButton
         onPress={handleSignUp}
+        text="Sign Up"
+        loading={loading}
+        iconName="arrow-forward-outline"
         disabled={loading}
-      >
-        {loading ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <>
-            <Text style={styles.buttonText}>Sign Up</Text>
-            <Icon name="arrow-forward-outline" size={20} color="#fff" />
-          </>
-        )}
-      </TouchableOpacity>
-
-      {/* Login Link */}
-      <TouchableOpacity
-        style={styles.loginButton}
+      />
+      {/* Login Button */}
+      <CustomButton
         onPress={() => navigation.navigate('Login')}
-      >
-        <Text style={styles.buttonText}>Login</Text>
-        <Icon name="arrow-back" size={20} color="#fff" />
-      </TouchableOpacity>
-
-      {/* Error Message */}
+        text="Login"
+        loading={false}
+        iconName="arrow-back"
+      />
       {error && <Text style={styles.error}>{error}</Text>}
     </View>
   );
@@ -185,43 +173,6 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     color: '#333',
-  },
-  signUpButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#E76F51',
-    paddingVertical: 14,
-    marginTop: 100,
-    width: 342,
-    height: 44,
-    marginBottom: 16,
-  },
-  loginButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#E76F51',
-    paddingVertical: 14,
-    marginTop: 10,
-    width: 342,
-    height: 44,
-    marginBottom: 16,
-  },
-  buttonText: {
-    fontSize: 14,
-    fontWeight: 600,
-    color: '#fff',
-    marginRight: 8,
-  },
-  loginLink: {
-    marginTop: 16,
-    alignItems: 'center',
-  },
-  loginText: {
-    fontSize: 14,
-    color: '#E76F51',
-    fontWeight: '500',
   },
   error: {
     color: 'red',

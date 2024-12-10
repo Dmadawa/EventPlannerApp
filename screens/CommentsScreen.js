@@ -15,7 +15,7 @@ const CommentsScreen = ({ route }) => {
         );
         setComments(response.data);
       } catch (error) {
-        console.error('Error fetching comments:', error);
+        console.log('Error fetching comments:', error);
       } finally {
         setLoading(false);
       }
